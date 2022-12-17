@@ -1,0 +1,453 @@
+{% extends 'base2.html' %}
+{% load static %}
+{% load mathfilters %}
+{% load utils %}
+
+{% block title %}Profile Page{% endblock title %}
+
+{% block body %}
+<br>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="top-breadcrumb">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'index' %}" style="color:#121212;">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Profile page</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+    
+    {% if cover == 'default-cover.png' %}
+    <a href="{% url 'settings' user.id %}">
+    {% else %}
+    <a href="{{user.cover_img.url}}">
+    {% endif %}
+        <div class="img" style="background-image: linear-gradient(150deg, rgba(63, 174, 255, .3)15%, rgba(63, 174, 255, .3)70%, rgba(63, 174, 255, .3)94%), url({{user.cover_img.url}});
+        height: 350px;background-size: cover;"></div>
+    </a>
+    <div class="card social-prof">
+        <div class="card-body">
+            <div class="wrapper">
+                {% if profile == 'blank-profile-picture.png' %}
+                <a href="{% url 'settings' user.id %}">
+                {% else %}
+                <a href="{{user.profile_img.url}}">
+                {% endif %}
+                    <img src="{{user.profile_img.url}}" class="user-profile">
+                </a>
+                <h3>{{user}}</h3>
+                {% comment %} <p>Web Developer</p> {% endcomment %}
+            </div>
+            <div class="row ">
+                <div class="col-lg-12">
+                    <ul class=" nav nav-tabs justify-content-center s-nav">
+                        <li><a href="{% url 'profile' user.id %}?tab=timeline"{% if tab == 'timeline' %} class="active"{% else %} style="color: #121212;text-decoration: none"{% endif %}>Timeline</a></li>
+                        <li><a href="{% url 'profile' user.id %}?tab=about"{% if tab == 'about' %} class="active"{% else %} style="color: #121212;text-decoration: none"{% endif %}>About</a></li>
+                        <li><a href="{% url 'profile' user.id %}?tab=friends"{% if tab == 'friends' %} class="active"{% else %} style="color: #121212;text-decoration: none"{% endif %}>Friends</a></li>
+                        <li><a href="{% url 'profile' user.id %}?tab=photos"{% if tab == 'photos' %} class="active"{% else %} style="color: #121212;text-decoration: none"{% endif %}>Photos</a></li>
+                        <li><a href="{% url 'profile' user.id %}?tab=videos"{% if tab == 'videos' %} class="active"{% else %} style="color: #121212;text-decoration: none"{% endif %}>Videos</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if tab == 'timeline' %}
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body info-card social-about">
+                        <form action="{% url 'add-post' %}" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <textarea name="content"v cols="30" rows="3" style="display: block; width: 100%; border: none; border-bottom: 1px solid #121212; white-space: pre-line;" placeholder="  what do you think?" required></textarea><br>
+                            <input id="img" type="file" hidden="" name="image" accept="image/*" multiple>
+                            <label for="img" class="btn btn-outline">
+                                <i class="fa fa-fw fa-image"></i> img
+                            </label>
+                            <input id="vid" type="file" hidden="" name="video" accept="video/*" multiple>
+                            <label for="vid" class="btn btn-outline">
+                                <i class="fa fa-fw fa-video-camera"></i> vid
+                            </label>
+                            <select name="privacy" class="custom-select">
+                                {% for stat in status %}
+                                    {% if privacy == stat %}
+                                        <option value="{{stat}}" selected>{{stat}}</option>
+                                    {% else %}
+                                        <option value="{{stat}}">{{stat}}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            <input type="submit" value="Post" class="btn btn-primary" style="background:#121212;border-color:#121212; float: right;">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% for post in posts reversed %}
+        {% comment %}  {% endcomment %}
+        {% if post.is_shared %}
+            <div class="row" style="margin-bottom:-50px;">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-body info-card social-about" style="position: relative">
+                            <a href="{% url 'profile' post.user.id %}" style="text-decoration: none;color: #121212; float: left;">
+                                <img src="{{post.user.profile_img.url}}" width="35px" style="border-radius: 50%;">&nbsp;
+                                <strong style="position: absolute ;top: 14px;">
+                                    {{post.user.first_name}}&nbsp;
+                                    {% if post.privacy == 0 %}
+                                    <i class="fa-solid fa-users" style="color: gray; font-size: 11;"></i>
+                                    {% elif post.privacy == 1 %}
+                                    <i class="fas fa-user-friends" style="color: gray; font-size: 11;"></i>
+                                    {% else %}
+                                    <i class="fa fa-lock" aria-hidden="true" style="color: gray; font-size: 11;"></i>
+                                    {% endif %}
+                                </strong> 
+                            </a>
+                            <div class="btn-group-sm" style="float:right;">
+                                <a type="button" class="btn btn-outline btn-sm" style="color:gray" href="{% url 'edit-post' post.id %}">Edit</a>
+                                <a type="button" class="btn btn-outline btn-sm" style="color:red" href="{% url 'delete-post' post.id %}">Del</a>
+                                <a type="button" class="btn btn-outline btn-sm" style="color:gray" href="{% url 'disable-comments-post' post.id %}">{% if post.disable_comments %}Enable{% else %}Disable{% endif %}</a>
+                            </div>
+                            <p style="position: absolute; top: 34px; left: 55px; font-size: 15px; color: gray">{{post.time}}</p>
+                            <p style="margin: 10px 0 10px 15px; position: absolute; top: 50px;">{{post.content|safe}}</p>
+                            <br><br><br>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        {% comment %}  {% endcomment %}
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card" style="border-radius: {% if post.is_shared %}10px; z-index: 3{% else %}5px{% endif %};">
+                    <div class="card-body info-card social-about" style="position: relative;">
+                        <a href="{% if post.is_shared %}{% url 'profile' post.shared_post.user.id %}{% else %}{% url 'profile' post.user.id %}{% endif %}" style="text-decoration: none;color: #121212; float: left;">
+                            <img src="{% if post.is_shared %}{{post.shared_post.user.profile_img.url}}{% else %}{{post.user.profile_img.url}}{% endif %}" width="35px" style="border-radius: 50%;">&nbsp;
+                            <strong style="position: absolute ;top: 14px;">
+                                {% if post.is_shared %}{{post.shared_post.user.first_name}}{% else %}{{post.user.first_name}}{% endif %}&nbsp;
+                                {% if post.is_shared %}
+                                    {% if post.shared_post.privacy == 0 %}
+                                        <i class="fa-solid fa-users" style="color: gray; font-size: 11;"></i>
+                                    {% elif post.shared_post.privacy == 1 %}
+                                        <i class="fas fa-user-friends" style="color: gray; font-size: 11;"></i>
+                                    {% else %}
+                                        <i class="fa fa-lock" aria-hidden="true" style="color: gray; font-size: 11;"></i>
+                                    {% endif %}
+                                {% else %}
+                                    {% if post.privacy == 0 %}
+                                        <i class="fa-solid fa-users" style="color: gray; font-size: 11;"></i>
+                                    {% elif post.privacy == 1 %}
+                                        <i class="fas fa-user-friends" style="color: gray; font-size: 11;"></i>
+                                    {% else %}
+                                        <i class="fa fa-lock" aria-hidden="true" style="color: gray; font-size: 11;"></i>
+                                    {% endif %}
+                                {% endif %}
+                            </strong> 
+                        </a>
+                        {% if post.is_shared %}
+                            <a href="{% url 'show-post' post.shared_post.id %}" class="btn btn-sm" style="float:right;color:gray;">show post</a>
+                        {% else %}
+                            <div class="btn-group-sm" style="float:right;">
+                                <a type="button" class="btn btn-outline btn-sm" style="color:gray" href="{% url 'edit-post' post.id %}">Edit</a>
+                                <a type="button" class="btn btn-outline btn-sm" style="color:red" href="{% url 'delete-post' post.id %}">Del</a>
+                                <a type="button" class="btn btn-outline btn-sm" style="color:gray" href="{% url 'disable-comments-post' post.id %}">{% if post.disable_comments %}Enable{% else %}Disable{% endif %}</a>
+                            </div>
+                        {% endif %}
+                        <p style="position: absolute; top: 34px; left: 55px; font-size: 15px; color: gray">
+                            {% if post.is_shared %}{{post.shared_post.time}}{% else %}{{post.time}}{% endif %}
+                        </p>
+                        <p style="margin: 10px 0 10px 15px; position: absolute; top: 50px;">
+                            {% if post.is_shared %}{{post.shared_post.content|safe}}{% else %}{{post.content|safe}}{% endif %}
+                        </p>
+                        <br><br><br>
+                    </div>
+                    {% if post.is_shared %}
+                        {% if post.shared_post.has_img %}
+                            <div class="card-body info-card social-about" style="overflow: scroll; margin-top: -30px;">
+                                <div style="display: inline-block; height: 200px; overflow: scroll;">
+                                    {% for img in post.shared_post.imgs %}
+                                        <a href="{{img.url}}"><img src="{{img.url}}" width="100%" style="display: inline-block;"></a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        {% if post.has_img %}
+                            <div class="card-body info-card social-about" style="overflow: scroll; margin-top: -30px;">
+                                <div style="display: inline-block; height: 200px; overflow: scroll;">
+                                    {% for img in post.imgs %}
+                                        <a href="{{img.url}}"><img src="{{img.url}}" width="100%" style="display: inline-block;"></a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                    {% if post.is_shared %}
+                        {% if post.shared_post.has_vid %}
+                            <div class="card-body info-card social-about" style="overflow: scroll; margin-top: -30px;">
+                                <div style="display: inline-block;">
+                                    {% for vid in post.shared_post.vids %}
+                                        <video src="{{vid.url}}" width="100%" controls></video>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        {% if post.has_vid %}
+                            <div class="card-body info-card social-about" style="overflow: scroll; margin-top: -30px;">
+                                <div style="display: inline-block;">
+                                    {% for vid in post.vids %}
+                                        <video src="{{vid.url}}" width="100%" controls></video>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+
+                {% if post.is_shared %}
+                </div>
+                <div class="card" style="border-radius: 0 0 5px 5px; margin-top:-65px;"><br><br>
+                {% endif %}
+
+                    <div class="card-body info-card social-about" style="margin-top: -25px;">
+                        <p style="float: left; font-size: 15px; color: gray">
+                            <a href="{% url 'show-post' post.id %}?section=likes" class="link">
+                                {{post.likes_num}}{% if post.likes_num == 1 %} like{% else %} likes{% endif %},
+                            </a>
+                            <a href="{% url 'show-post' post.id %}" class="link">
+                                {{post.comments_num}}{% if post.comments_num == 1 %} comment{% else %} comments{% endif %}                        
+                            </a>
+                        </p>
+                        <p style="float: right; font-size: 15px; color: gray">
+                            {{post.shares_num}}{% if post.shares_num == 1 %} share{% else %} shares{% endif %}
+                        </p>
+                    </div>
+                    <hr style="margin-top: -30px;">
+                    <div class="card-body info-card social-about d-flex justify-content-around" style="margin-top: -20px;">
+                        <a href="{% url 'like-post' post.id %}" style="text-decoration: none; color: {% if post.liked %}#121212{% else %}grey{% endif %};">
+                            <i class="fa fa-thumbs-up" aria-hidden="true"></i> like
+                        </a>
+                        {% if not post.disable_comments %}
+                            <a href="{% url 'comment-post' post.id %}" style="text-decoration: none; color:grey;">
+                                <i class="fa-solid fa-comment"></i> comment
+                            </a>
+                        {% endif %}
+                        <a href="{% if post.is_shared %}{% url 'share-post' post.shared_post.id %}{% else %}{% url 'share-post' post.id %}{% endif %}" style="text-decoration: none; color:grey;">
+                            <i class="fa-solid fa-share"></i> share
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% elif tab == 'about' %}
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body info-card social-about">
+                        <h2 class="text-blue" style="color:#121212;">About</h2>
+                        {% if user.bio %}
+                            <h4><strong>About Me</strong></h4>
+                            <p>{{user.bio}}</p>
+                        {% else %}
+                            <h4>
+                                <a href="{% url 'settings' user.id %}" style="text-decoration:none; color:#121212;">
+                                    <strong>About Me</strong><br>
+                                    <span style="font-weight:300">to be completed</span>
+                                </a>
+                            </h4>
+                        {% endif %}
+                        <h4 class="mb-3"><strong>Personal Info</strong></h4>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="social-info">
+                                    <i class="fas fa-birthday-cake mr-2"></i>
+                                    <span>{{user.birth}}</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="social-info">
+                                    {% if user.location == '' %}
+                                        <a href="{% url 'settings' user.id %}" style="text-decoration:none; color:#121212;">
+                                            <i class="fas fa-map-marker-alt mr-2"></i>
+                                            <span style="font-weight:300">to be completed</span>
+                                        </a>
+                                    {% else %}
+                                        <i class="fas fa-map-marker-alt mr-2"></i>
+                                        <span>{{user.location}}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="social-info">
+                                    <i class="fas fas fa-users mr-2"></i>
+                                    {% if user.is_male %}
+                                    <span>Male</span>
+                                    {% else %}
+                                    <span>Female</span>    
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="social-info">
+                                    {% if user.job == '' %}
+                                        <a href="{% url 'settings' user.id %}" style="text-decoration:none; color:#121212;">
+                                            <i class="fas fa-briefcase mr-2"></i>
+                                            <span style="font-weight:300">to be completed</span>
+                                        </a>
+                                    {% else %}
+                                        <i class="fas fa-briefcase mr-2"></i>
+                                        <span>{{user.job}}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="social-info">
+                                    <i class="fas fas fa-mobile mr-2"></i>
+                                    <span>{{user.phone}}</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="social-info">
+                                    <i class="fas fas fa-envelope mr-2"></i>
+                                    <span>{{user.email}}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card info-card">
+                    <div class="card-body">
+                        <h2 class="text-blue">Skills</h2>
+                        <table class="table table-borderless">
+                            <tbody>
+                                {% for skill in skills %}
+                                    <tr>
+                                        <td>{{skill.skill}}</td>
+                                        <td>
+                                            {% for star in skill.rate|times %}
+                                                <i class="fas fa-star" style="color:#dbe20d"></i>
+                                            {% endfor %}
+                                            {% for star in 5|sub:skill.rate|times %}
+                                                <i class="fas fa-star" style="color:#121212"></i>
+                                            {% endfor %}
+                                        </td>
+                                        <td><a href="{% url 'remove-skill' user.id skill.skill.name %}" style="text-decoration: none; color:rgb(235, 6, 6)">remove</a></td>
+                                    </tr>
+                                {% empty %}
+                                    No skills added yet.
+                                {% endfor %}
+                            </tbody>
+                        </table><hr>
+                        <form action="{% url 'add-skill' user.id %}" method="post">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">New skill</span>
+                                </div>
+                                <input class="form-control" type="text" name="skill" required>
+                                <select name="rate" class="custom-select">
+                                    {% for rate in rates %}
+                                        <option value="{{rate}}">{{rate}}</option>
+                                    {% endfor %}
+                                </select>
+                                <input type="submit" value="Add" class="btn btn-primary" style="background:#121212;border-color:#121212;">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>  
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card info-card">
+                    <div class="card-body">
+                        <h2 class="text-blue">Education</h2>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <h4><strong>Pune University </strong></h4>
+                                <p>May 2009 to June 2011 </p>
+                            </div>
+                            <div class="col-lg-6">
+                                <h4><strong>Course: Gamification</strong></h4>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </p>
+                            </div>
+                            <div class="col-lg-6">
+                                <h4><strong>St Xavier Highschool</strong></h4>
+                                <p>Aug 2004 to June 2009 </p>
+                            </div>
+                            <div class="col-lg-6">
+                                <h4><strong>Bachelor - Computer Science</strong></h4>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card info-card">
+                    <div class="card-body">
+                        <h2 class="text-blue">Work</h2>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <h4><strong>Creative Arts - 2016-19</strong></h4>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </p>
+                            </div>
+                            <div class="col-lg-6">
+                                <h4><strong>Web Media - 2014-16</strong></h4>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </p>
+                            </div>
+                            <div class="col-lg-6">
+                                <h4><strong>Global Infosoft - 2012-14</strong></h4>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </p>
+                            </div>
+                            <div class="col-lg-6">
+                                <h4><strong>Freelancer - 2011-12</strong></h4>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% elif tab == 'friends' %}
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body info-card social-about" style="">
+                        {% if me %}
+                            <div style="float: right;">
+                                <form>
+                                    <select name="privacy" class="custom-select">
+                                        {% for stat in status %}
+                                            {% if privacy == stat %}
+                                                <option value="{{stat}}" selected>{{stat}}</option>
+                                            {% else %}
+                                                <option value="{{stat}}">{{stat}}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                    <input type="submit" value="Post" class="btn btn-primary" style="background:#121212;border-color:#121212; float: right;">
+                                </form>
+                            </div>
+                        {% else %}
+                            <a href="#" class="btn btn-primary" style="background:#121212; border-color:#121212;">follow</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

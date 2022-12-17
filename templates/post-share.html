@@ -1,0 +1,121 @@
+{% extends 'base2.html' %}
+{% load static %}
+
+{% block title %}Post share{% endblock %}
+    
+{% block body %}
+<div class="container">
+    <br>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="top-breadcrumb">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'index' %}" style="color:#121212;">Home</a></li>
+                        {% if request.user == post.user %}
+                        <li class="breadcrumb-item"><a href="{% url 'profile' request.user.id %}" style="color:#121212;">Profile page</a></li>
+                        {% endif %}
+                        <li class="breadcrumb-item active" aria-current="page"><a href="{% url 'show-post' post.id %}" style="color:#121212;">Post</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Share</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    {% comment %}  {% endcomment %}
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-body info-card social-about" style="position: relative;">
+                    <a href="{% url 'profile' post.user.id %}" style="text-decoration: none;color: #121212; float: left;">
+                        <img src="{{post.user.profile_img.url}}" width="35px" style="border-radius: 50%;">&nbsp;
+                        <strong style="position: absolute ;top: 14px;">
+                            {{post.user.first_name}}&nbsp;
+                            {% if post.privacy == 0 %}
+                                <i class="fa-solid fa-users" style="color: gray; font-size: 11;"></i>
+                            {% elif post.privacy == 1 %}
+                                <i class="fas fa-user-friends" style="color: gray; font-size: 11;"></i>
+                            {% else %}
+                                <i class="fa fa-lock" aria-hidden="true" style="color: gray; font-size: 11;"></i>
+                            {% endif %}
+                        </strong>
+                    </a>
+                    <p style="position: absolute; top: 34px; left: 55px; font-size: 15px; color: gray">{{post.time}}</p>
+                    <p style="margin: 10px 0 10px 15px; position: absolute; top: 50px;">{{post.content|safe}}</p>
+                    <br><br><br>
+                </div>
+                {% if post.has_img %}
+                    <div class="card-body info-card social-about" style="overflow: scroll; margin-top: -30px;">
+                        <div style="display: inline-block; height: 200px; overflow: scroll;">
+                            {% for img in post.imgs %}
+                                <a href="{{img.url}}"><img src="{{img.url}}" width="100%" style="display: inline-block;"></a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+                {% if post.has_vid %}
+                    <div class="card-body info-card social-about" style="overflow: scroll; margin-top: -30px;">
+                        <div style="display: inline-block;">
+                            {% for vid in post.vids %}
+                                <video src="{{vid.url}}" width="100%" controls></video>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="card-body info-card social-about" style="margin-top: -25px;">
+                    <p style="float: left; font-size: 15px; color: gray">
+                        <a href="{% url 'show-post' post.id %}?section=likes" class="link">
+                            {{post.likes_num}}{% if post.likes_num == 1 %} like{% else %} likes{% endif %},
+                        </a>
+                        <a href="{% url 'show-post' post.id %}" class="link">
+                            {{post.comments_num}}{% if post.comments_num == 1 %} comment{% else %} comments{% endif %}                        
+                        </a>
+                    </p>
+                    <p style="float: right; font-size: 15px; color: gray">
+                        {{post.shares_num}}{% if post.shares_num == 1 %} share{% else %} shares{% endif %}
+                    </p>
+                </div>
+                <hr style="margin-top: -30px;">
+                <div class="card-body info-card social-about d-flex justify-content-around" style="margin-top: -20px;">
+                    <a href="{% url 'like-post' post.id %}" style="text-decoration: none; color: {% if post.liked %}#121212{% else %}grey{% endif %};">
+                        <i class="fa fa-thumbs-up" aria-hidden="true"></i> like
+                    </a>
+                    {% if not post.disable_comments %}
+                        <a href="{% url 'comment-post' post.id %}" style="text-decoration: none; color:grey;">
+                            <i class="fa-solid fa-comment"></i> comment
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'share-post' post.id %}" style="text-decoration: none; color:grey;">
+                        <i class="fa-solid fa-share"></i> share
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row" style="bottom: 0; position: absolute; width:100%; margin-bottom:-40px;">
+        <div class="col-lg-6">
+            <div class="card" style="border: 5px 5px 0 0;">
+                <div class="card-body info-card social-about">
+                    <form action="{% url 'share-post' post.id %}" method="post">
+                        {% csrf_token %}
+                        <textarea name="content"v cols="30" rows="3" style="display: block; width: 100%; border: none; border-bottom: 1px solid #121212; white-space: pre-line;" placeholder="  what do you think?"></textarea><br>
+                        <select name="privacy" class="custom-select">
+                            {% for stat in status %}
+                                {% if privacy == stat %}
+                                    <option value="{{stat}}" selected>{{stat}}</option>
+                                {% else %}
+                                    <option value="{{stat}}">{{stat}}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <input type="submit" value="Share" class="btn btn-primary" style="background:#121212;border-color:#121212; float: right;">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock body %}

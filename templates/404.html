@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Error404{% endblock title %}
+
+{% block body %}
+    <h1>Error 404</h1><hr>
+
+    <h3>Please leave us your problem here: </h3><br><br>
+    <form action="" method="post">
+        <label for="problem">Problem: </label>
+        <input type="text" name="problem" placeholder="Enter your problem here"><br><br>
+        <input type="submit" value="Send the problem to admin">
+    </form>
+{% endblock %}

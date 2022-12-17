@@ -1,0 +1,310 @@
+{% extends 'base2.html' %}
+{% load static %}
+
+{% block title %}Post{% endblock %}
+    
+{% block body %}
+
+<div class="container">
+    <br>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="top-breadcrumb">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'index' %}" style="color:#121212;">Home</a></li>
+                        {% if request.user == post.user %}
+                        <li class="breadcrumb-item"><a href="{% url 'profile' request.user.id %}" style="color:#121212;">Profile page</a></li>
+                        {% endif %}
+                        <li class="breadcrumb-item active" aria-current="page">Post</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    {% comment %}  {% endcomment %}
+    {% if post.is_shared %}
+        <div class="row" style="margin-bottom:-50px;">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body info-card social-about" style="position: relative">
+                        <a href="{% url 'profile' post.user.id %}" style="text-decoration: none;color: #121212; float: left;">
+                            <img src="{{post.user.profile_img.url}}" width="35px" style="border-radius: 50%;">&nbsp;
+                            <strong style="position: absolute ;top: 14px;">
+                                {{post.user.first_name}}&nbsp;
+                                {% if post.privacy == 0 %}
+                                <i class="fa-solid fa-users" style="color: gray; font-size: 11;"></i>
+                                {% elif post.privacy == 1 %}
+                                <i class="fas fa-user-friends" style="color: gray; font-size: 11;"></i>
+                                {% else %}
+                                <i class="fa fa-lock" aria-hidden="true" style="color: gray; font-size: 11;"></i>
+                                {% endif %}
+                            </strong> 
+                        </a>
+                        {% if post.user == request.user %}
+                            <div class="btn-group-sm" style="float:right;">
+                                <a type="button" class="btn btn-outline btn-sm" style="color:gray" href="{% url 'edit-post' post.id %}">Edit</a>
+                                <a type="button" class="btn btn-outline btn-sm" style="color:red" href="{% url 'delete-post' post.id %}">Del</a>
+                                <a type="button" class="btn btn-outline btn-sm" style="color:gray" href="{% url 'disable-comments-post' post.id %}">{% if post.disable_comments %}Enable{% else %}Disable{% endif %}</a>
+                            </div>
+                        {% endif %}
+                        <p style="position: absolute; top: 34px; left: 55px; font-size: 15px; color: gray">{{post.time}}</p>
+                        <p style="margin: 10px 0 10px 15px; position: absolute; top: 50px;"></p>{{post.content|safe}}
+                        <br><br><br>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+    {% comment %}  {% endcomment %}
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card" style="border-radius: {% if post.is_shared %}10px; z-index: 3{% else %}5px 5px 0 0{% endif %};">
+                <div class="card-body info-card social-about" style="position: relative;">
+                    <a href="{% if post.is_shared %}{% url 'profile' post.shared_post.user.id %}{% else %}{% url 'profile' post.user.id %}{% endif %}" style="text-decoration: none;color: #121212; float: left;">
+                        <img src="{% if post.is_shared %}{{post.shared_post.user.profile_img.url}}{% else %}{{post.user.profile_img.url}}{% endif %}" width="35px" style="border-radius: 50%;">&nbsp;
+                        <strong style="position: absolute ;top: 14px;">
+                            {% if post.is_shared %}{{post.shared_post.user.first_name}}{% else %}{{post.user.first_name}}{% endif %}&nbsp;
+                            {% if post.is_shared %}
+                                {% if post.shared_post.privacy == 0 %}
+                                    <i class="fa-solid fa-users" style="color: gray; font-size: 11;"></i>
+                                {% elif post.shared_post.privacy == 1 %}
+                                    <i class="fas fa-user-friends" style="color: gray; font-size: 11;"></i>
+                                {% else %}
+                                    <i class="fa fa-lock" aria-hidden="true" style="color: gray; font-size: 11;"></i>
+                                {% endif %}
+                            {% else %}
+                                {% if post.privacy == 0 %}
+                                    <i class="fa-solid fa-users" style="color: gray; font-size: 11;"></i>
+                                {% elif post.privacy == 1 %}
+                                    <i class="fas fa-user-friends" style="color: gray; font-size: 11;"></i>
+                                {% else %}
+                                    <i class="fa fa-lock" aria-hidden="true" style="color: gray; font-size: 11;"></i>
+                                {% endif %}
+                            {% endif %}
+                        </strong> 
+                    </a>
+                    {% if post.is_shared %}
+                        <a href="{% url 'show-post' post.shared_post.id %}" class="btn btn-sm" style="float:right;color:gray;">show post</a>
+                    {% else %}
+                        {% if post.user == request.user %}
+                            <div class="btn-group-sm" style="float:right;">
+                                <a type="button" class="btn btn-outline btn-sm" style="color:gray" href="{% url 'edit-post' post.id %}">Edit</a>
+                                <a type="button" class="btn btn-outline btn-sm" style="color:red" href="{% url 'delete-post' post.id %}">Del</a>
+                                <a type="button" class="btn btn-outline btn-sm" style="color:gray" href="{% url 'disable-comments-post' post.id %}">{% if post.disable_comments %}Enable{% else %}Disable{% endif %}</a>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                    <p style="position: absolute; top: 34px; left: 55px; font-size: 15px; color: gray">
+                        {% if post.is_shared %}{{post.shared_post.time}}{% else %}{{post.time}}{% endif %}
+                    </p>
+                    <p style="margin: 10px 0 10px 15px; position: absolute; top: 50px;">
+                        {% if post.is_shared %}{{post.shared_post.content|safe}}{% else %}{{post.content|safe}}{% endif %}
+                    </p>
+                    <br><br><br>
+                </div>
+                {% if post.is_shared %}
+                    {% if post.shared_post.has_img %}
+                        <div class="card-body info-card social-about" style="overflow: scroll; margin-top: -30px;">
+                            <div style="display: inline-block; height: 200px; overflow: scroll;">
+                                {% for img in post.shared_post.imgs %}
+                                    <a href="{{img.url}}"><img src="{{img.url}}" width="100%" style="display: inline-block;"></a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    {% if post.has_img %}
+                        <div class="card-body info-card social-about" style="overflow: scroll; margin-top: -30px;">
+                            <div style="display: inline-block; height: 200px; overflow: scroll;">
+                                {% for img in post.imgs %}
+                                    <a href="{{img.url}}"><img src="{{img.url}}" width="100%" style="display: inline-block;"></a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+                {% if post.is_shared %}
+                    {% if post.shared_post.has_vid %}
+                        <div class="card-body info-card social-about" style="overflow: scroll; margin-top: -30px;">
+                            <div style="display: inline-block;">
+                                {% for vid in post.shared_post.vids %}
+                                    <video src="{{vid.url}}" width="100%" controls></video>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    {% if post.has_vid %}
+                        <div class="card-body info-card social-about" style="overflow: scroll; margin-top: -30px;">
+                            <div style="display: inline-block;">
+                                {% for vid in post.vids %}
+                                    <video src="{{vid.url}}" width="100%" controls></video>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+            {% if post.is_shared %}
+            </div>
+            <div class="card" style="border-radius: 0; margin-top:-65px;"><br><br>
+            {% endif %}
+
+                <div class="card-body info-card social-about" style="margin-top: -25px;">
+                    <p style="float: left; font-size: 15px; color: gray">
+                        <a href="{% url 'show-post' post.id %}?section=likes" class="link">
+                            {{post.likes_num}}{% if post.likes_num == 1 %} like{% else %} likes{% endif %},
+                        </a>
+                        <a href="{% url 'show-post' post.id %}" class="link">
+                            {{post.comments_num}}{% if post.comments_num == 1 %} comment{% else %} comments{% endif %}                        
+                        </a>
+                    </p>
+                    <p style="float: right; font-size: 15px; color: gray">
+                        {{post.shares_num}}{% if post.shares_num == 1 %} share{% else %} shares{% endif %}
+                    </p>
+                </div>
+                <hr style="margin-top: -30px;">
+                <div class="card-body info-card social-about d-flex justify-content-around" style="margin-top: -20px;">
+                    <a href="{% url 'like-post' post.id %}" style="text-decoration: none; color: {% if post.liked %}#121212{% else %}grey{% endif %};">
+                        <i class="fa fa-thumbs-up" aria-hidden="true"></i> like
+                    </a>
+                    {% if not post.disable_comments %}
+                        <a href="{% url 'comment-post' post.id %}" style="text-decoration: none; color:grey;">
+                            <i class="fa-solid fa-comment"></i> comment
+                        </a>
+                    {% endif %}
+                    <a href="{% if post.is_shared %}{% url 'share-post' post.shared_post.id %}{% else %}{% url 'share-post' post.id %}{% endif %}" style="text-decoration: none; color:grey;">
+                        <i class="fa-solid fa-share"></i> share
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% comment %}  {% endcomment %}
+    {% if not post.disable_comments %}
+        <div class="row" style="margin-top:-36px;">
+            <div class="col-lg-6">
+                <div class="card" style="border-radius: 0 0 5px 5px;">
+                    <div class="card-body info-card social-about">
+                        <form action="{% url 'comment-post' post.id %}" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <textarea name="content"v cols="30" rows="3" style="display: block; width: 100%;" required></textarea><br>
+                            <input id="img" type="file" hidden="" name="image" accept="image/*" multiple>
+                            <label for="img" class="btn btn-outline">
+                                <i class="fa fa-fw fa-image"></i> img
+                            </label>
+                            <input id="vid" type="file" hidden="" name="video" accept="video/*" multiple>
+                            <label for="vid" class="btn btn-outline">
+                                <i class="fa fa-fw fa-video-camera"></i> vid
+                            </label>
+                            <input type="submit" value="Comment" class="btn btn-primary" style="background:#121212;border-color:#121212; float: right;">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+    {% comment %}  {% endcomment %}
+    {% if section == 'likes' %}
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-body info-card social-about">
+                        <p style="float: left; font-size: 15px; color: #121212;">
+                            {{post.likes_num|title}}{% if post.likes_num == 1 %} like{% else %} likes{% endif %}
+                        </p>
+                    </div>
+                    {% if post.likes_num > 0 %}<hr style="margin-top:-30px">{% else %}<span style="margin-bottom:-20px"></span>{% endif %}
+                    {% for like in likes %}
+                    <div class="card-body info-card social-about" style="margin-top: -20px">
+                        <a href="{% url 'profile' like.user.id %}" class="link" style="color: #121212;">
+                            <img src="{{like.user.profile_img.url}}" style="border-radius: 50%" width="30px">
+                            <strong>{{like.user}}</strong>
+                        </a><br>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        {% for comment in post.comments %}
+            <div class="row">
+                <div class="col-lg-6">
+                    {% comment %} Comment {% endcomment %}
+                    <div class="card">
+                        <div class="card-body info-card social-about" style="margin-bottom: 50px">
+                            <a href="{% url 'profile' comment.user.id %}" style="text-decoration: none;color: #121212; float: left;">
+                                <img src="{{comment.user.profile_img.url}}" width="35px" style="border-radius: 50%;">&nbsp;
+                                <span style="font-weight: 500">{{comment.user.first_name}}</span>
+                            </a>
+                            {% if request.user == comment.user %}
+                                <div class="btn-group-sm" style="float:right;">
+                                    <a type="button" class="btn btn-outline btn-sm" style="color:gray" href="{% url 'edit-comment' comment.id %}">Edit</a>
+                                    <a type="button" class="btn btn-outline btn-sm" style="color:red" href="{% url 'delete-comment' comment.id %}">Del</a>
+                                </div>
+                            {% endif %}
+                            <br>
+                            <span style="position:absolute; top: 50px; left: 55px; margin-right: 10px; line-height:20px; width: 82%;">
+                                <div style="overflow-y: scroll; height: 30px">{{comment.content|safe}}</div>
+                                <hr style="margin:5px 0;">
+                                <span class="link" style="margin-left: 10px">{{comment.time}}</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    {% for reply in comment.replies %}
+                        {% comment %} Reply {% endcomment %}
+                        <div style="margin-top: -36px; margin-left: 35px;">
+                            <div class="card">
+                                <div class="card-body info-card social-about" style="position: relative; margin: 0 0 50px 0px;">
+                                    <a href="{% url 'profile' reply.user.id %}" style="text-decoration: none;color: #121212; float: left;">
+                                        <img src="{{reply.user.profile_img.url}}" width="35px" style="border-radius: 50%;">&nbsp;
+                                        <span style="font-weight: 500">{{reply.user.first_name}}</span>
+                                    </a>
+                                    {% if request.user == reply.user %}
+                                        <div class="btn-group-sm" style="float:right;">
+                                            <a type="button" class="btn btn-outline btn-sm" style="color:gray" href="{% url 'edit-comment' reply.id %}">Edit</a>
+                                            <a type="button" class="btn btn-outline btn-sm" style="color:red" href="{% url 'delete-comment' reply.id %}">Del</a>
+                                        </div>
+                                    {% endif %}
+                                    <br>
+                                    <span style="position:absolute; top: 50px; left: 55px; margin-right: 10px; line-height:20px; width:67%">
+                                        <div style="overflow-y: scroll; height: 30px">{{reply.content|safe}}</div>
+                                        <hr style="margin:5px 0; width: 120%;">
+                                        <span class="link">{{reply.time}}</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {% if not post.disable_comments %}
+                        {% comment %} Add Reply {% endcomment %}
+                        <div style="margin-top: -36px; margin-left: 35px;">
+                            <div class="card">
+                                <div class="card-body info-card social-about" style="position: relative; margin: 0 0 90px 0px;">
+                                    <a href="{% url 'profile' user.id %}" style="text-decoration: none;color: #121212; float: left;">
+                                        <img src="{{user.profile_img.url}}" width="35px" style="border-radius: 50%;">&nbsp;
+                                        <span style="font-weight: 500">{{user.first_name}}</span>
+                                    </a><br>
+                                    <span style="position:absolute; top: 50px; left: 55px; margin-right: 10px; line-height:20px; width:67%">
+                                        <form action="{% url 'reply-comment' post.id %}" method="post" enctype="multipart/form-data">
+                                            {% csrf_token %}
+                                            <textarea name="content"v cols="30" rows="3" style="display: block; width: 120%;" required></textarea><br>
+                                            <input type="submit" value="Reply" class="btn btn-sm btn-primary" style="background:#121212;border-color:#121212; float: right; margin-top:-20px; margin-right: -45px">
+                                        </form>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+{% endblock body %}
